@@ -1,0 +1,97 @@
+version: '2'
+
+services:
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    expose:
+      - "2181"
+
+  kafka:
+    image: wurstmeister/kafka:2.12-2.3.0
+    links:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: "20000"
+      KAFKA_CREATE_TOPICS: "input:30:1"
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+
+  timescaledb:
+    image: timescale/timescaledb:1.4.1-pg11
+    ports:
+      - "5432:5432"
+    command: "-p 5432"
+    environment:
+      POSTGRES_PASSWORD: "password"
+      TS_TUNE_MEMORY: 1GB
+
+  jobmanager:
+    image: flink-timescale:latest
+    expose:
+      - "6123"
+    ports:
+      - "8081:8081"
+    links:
+       - kafka
+    environment:
+      JOB_MANAGER_RPC_ADDRESS: "jobmanager"
+      command: "jobmanager"
+
+  taskmanager:
+    image: flink-timescale:latest
+    expose:
+      - "6121"
+      - "6122"
+    depends_on:
+      - jobmanager
+    links:
+      - jobmanager
+      - kafka
+      - timescaledb
+    environment:
+      JOB_MANAGER_RPC_ADDRESS: "jobmanager"
+      TASK_MANAGER_NUMBER_OF_TASK_SLOTS: 30
+      command: "taskmanager"
+      TASK_MANAGER_HEAP_SIZE: 3096m
+
+  flink-timescale:
+    image: flink-timescale:latest
+    depends_on:
+      - kafka
+      - timescaledb
+      - taskmanager
+    ports:
+      - "5005:5005"
+    links:
+      - jobmanager
+    environment:
+      TOPIC_SOURCE: "input"
+      BOOTSTRAP_SERVER: "kafka:9092"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASS: "password"
+      POSTGRES_URL: "jdbc:postgresql://timescaledb:5432/postgres"
+      JOB_NAME: "flink-timescale"
+      JOB_MANAGER_RPC_ADDRESS: "jobmanager"
+      command: "startJob"
+      JOB_MANAGER_REST_PORT: 8081
+      JOB_MANAGER_RPC_PORT: 6123
+      JOB_MANAGER_BLOB_PORT: 6124
+      JOB_MANAGER_QUERY_PORT: 6125
+      PARALLELISM: 30
+      MAIN_CLASS: "com.flink.timescale.Application"
+      NUM_STREAM_THREADS: 1
+      JAR_FILE_NAME: "job.jar"
+
+
+#networks:
+#  default:
+#    external:
+#      name: ""
