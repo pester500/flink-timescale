@@ -1,0 +1,116 @@
+version: '2'
+
+services:
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181"
+
+  kafka1:
+    image: wurstmeister/kafka:2.13-2.7.0
+
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka1
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: "20000"
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+
+  kafka2:
+    image: wurstmeister/kafka:2.13-2.7.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "19092:9092"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka2
+      KAFKA_ADVERTISED_PORT: 19092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: "20000"
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+
+  kafka3:
+    image: wurstmeister/kafka:2.13-2.7.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "29092:9092"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka3
+      KAFKA_ADVERTISED_PORT: 29092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: "20000"
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_CREATE_TOPICS: "input:60:1,logs:60:1"
+
+  timescaledb:
+    image: timescale/timescaledb:2.5.0-pg14
+    ports:
+      - "5432:5432"
+    command: "-p 5432"
+    environment:
+      POSTGRES_PASSWORD: "password"
+      TS_TUNE_MEMORY: 16GB
+
+  jobmanager:
+    image: flink-timescale:latest
+    expose:
+      - "6123"
+    ports:
+      - "8081:8081"
+    environment:
+      JOB_MANAGER_RPC_ADDRESS: "jobmanager"
+      command: "jobmanager"
+
+  taskmanager:
+    image: flink-timescale:latest
+    expose:
+      - "6121"
+      - "6122"
+    depends_on:
+      - jobmanager
+    environment:
+      JOB_MANAGER_RPC_ADDRESS: "jobmanager"
+      TASK_MANAGER_NUMBER_OF_TASK_SLOTS: 45
+      command: "taskmanager"
+      TASK_MANAGER_PROCESS_SIZE: 16384m
+
+  flink-timescale:
+    image: flink-timescale:latest
+    ports:
+      - "5005:5005"
+    environment:
+      CRIMES_SOURCE: "input"
+      LOGS_SOURCE: "logs"
+      BOOTSTRAP_SERVER: "kafka1:9092"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASS: "password"
+      POSTGRES_URL: "jdbc:postgresql://timescaledb:5432/postgres?reWriteBatchedInserts=true"
+      JOB_NAME: "flink-timescale"
+      JOB_MANAGER_RPC_ADDRESS: "jobmanager"
+      command: "startJob"
+      JOB_MANAGER_REST_PORT: 8081
+      JOB_MANAGER_RPC_PORT: 6123
+      JOB_MANAGER_BLOB_PORT: 6124
+      JOB_MANAGER_QUERY_PORT: 6125
+      CRIMES_PARALLELISM: 20
+      LOGS_PARALLELISM: 25
+      CRIMES_MAIN_CLASS: "com.flink.Application"
+      CRIMES_JAR_FILE_NAME: "crimes.jar"
+      LOGS_MAIN_CLASS: "com.flink.logs.Application"
+      LOGS_JAR_FILE_NAME: "logs.jar"
+      NUM_STREAM_THREADS: 1
