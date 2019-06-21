@@ -12,7 +12,7 @@ import org.apache.flink.api.java.io.jdbc.JDBCOutputFormat
 import org.apache.flink.api.java.io.jdbc.JDBCSinkFunction
 import org.apache.flink.api.java.typeutils.TypeExtractor
 import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
+import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer
 import org.apache.flink.types.Row
 import org.flywaydb.core.Flyway
@@ -24,11 +24,10 @@ class TimescaleFlow extends Constants with Serializable with Logging {
   def execute(): Unit = {
 
     logger.info("Starting the flyway migration")
-    lazy val flyway = new Flyway()
-    flyway.setDataSource(config.url, config.user, config.pass)
+    lazy val flyway = Flyway.configure.dataSource(config.url, config.user, config.pass).load()
     flyway.migrate()
-
     logger.info("Finished the flyway migration")
+
     val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime)
     env.setMaxParallelism(config.maxParallelism)
@@ -38,13 +37,13 @@ class TimescaleFlow extends Constants with Serializable with Logging {
     properties.setProperty(GROUP_ID, config.groupId)
     properties.setProperty(AUTO_OFFSET_RESET, LATEST)
 
-    val kafkaConsumer = new FlinkKafkaConsumer[String](config.source, KafkaStringSchema, properties)
+    lazy val kafkaConsumer = new FlinkKafkaConsumer[String](config.source, KafkaStringSchema, properties)
 
     implicit val kafkaStringTypeInformation: TypeInformation[String] = KafkaStringSchema.getProducedType
-    implicit val wordMessageMapperTypeInformation: TypeInformation[WordMessage] = TypeExtractor.getForClass(classOf[WordMessage])
-    implicit val rowMapperTypeInformation: TypeInformation[Row] = TypeExtractor.getForClass(classOf[Row])
+    implicit val wordMessageMapperTypeInformation: TypeInformation[WordMessage] = createTypeInformation[WordMessage]
+    implicit val rowMapperTypeInformation: TypeInformation[Row] = createTypeInformation[Row]
 
-    val jdbcOutput = JDBCOutputFormat
+    lazy val jdbcOutput = JDBCOutputFormat
       .buildJDBCOutputFormat
       .setDrivername("org.postgresql.Driver")
       .setDBUrl(config.url)
@@ -56,6 +55,7 @@ class TimescaleFlow extends Constants with Serializable with Logging {
 
     env.addSource(kafkaConsumer)
       .map(new WordMessageMapper).name("Add timestamp")
+      .filter(_ != null)
       .map(new RowMapper).name("Convert to Row")
       .addSink(new JDBCSinkFunction(jdbcOutput)).name("Insert into Timescale")
 
@@ -64,7 +64,6 @@ class TimescaleFlow extends Constants with Serializable with Logging {
   }
 
   object KafkaStringSchema extends DeserializationSchema[String] {
-    import org.apache.flink.api.java.typeutils.TypeExtractor
 
     override def isEndOfStream(t: String): Boolean = false
 

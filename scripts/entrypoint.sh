@@ -86,23 +86,8 @@ elif [ "$COMMAND" = "taskmanager" ]; then
     TASK_MANAGER_NUMBER_OF_TASK_MANAGERS=${TASK_MANAGER_NUMBER_OF_TASK_MANAGERS:-1}
 
 
-    # If you ever see the Exception java.io.IOException: Insufficient number of network buffers,
-    # you need to adapt the amount of memory used for network buffers in order for your program to run on your task managers.
-    # Network buffers are stored off heap so keep this in mind when allocating memory for the marathon app.
-    # See https://ci.apache.org/projects/flink/flink-docs-master/ops/config.html#configuring-the-network-buffers
-    TASK_MANAGER_NETWORK_MEMORY_FRACTION=${TASK_MANAGER_NETWORK_MEMORY_FRACTION:0.1}
-    TASK_MANAGER_NETWORK_MEMORY_MIN=${TASK_MANAGER_NETWORK_MEMORY_MIN:67108864}
-    TASK_MANAGER_NETWORK_MEMORY_MAX=${TASK_MANAGER_NETWORK_MEMORY_MAX:1073741824}
-
-
     sed -i -e "s/taskmanager.numberOfTaskSlots: 1/taskmanager.numberOfTaskSlots: $TASK_MANAGER_NUMBER_OF_TASK_SLOTS/g" "$FLINK_CONFIG_FILE"
     sed -i -e "s/taskmanager.heap.size: 1024m/taskmanager.heap.size: $TASK_MANAGER_HEAP_SIZE/g" "$FLINK_CONFIG_FILE"
-    echo "taskmanager.host: $HOST" >> "$FLINK_CONFIG_FILE"
-    echo "taskmanager.data.port: $PORT0" >> "$FLINK_CONFIG_FILE"
-    echo "taskmanager.rpc.port: $PORT1" >> "$FLINK_CONFIG_FILE"
-    echo "taskmanager.network.memory.fraction: $TASK_MANAGER_NETWORK_MEMORY_FRACTION" >> "$FLINK_CONFIG_FILE"
-    echo "taskmanager.network.memory.min: $TASK_MANAGER_NETWORK_MEMORY_MIN" >> "$FLINK_CONFIG_FILE"
-    echo "taskmanager.network.memory.max: $TASK_MANAGER_NETWORK_MEMORY_MAX" >> "$FLINK_CONFIG_FILE"
     echo "taskmanager.exit-on-fatal-akka-error: true" >> "$FLINK_CONFIG_FILE"
     echo "taskmanager.jvm-exit-on-oom: true" >> "$FLINK_CONFIG_FILE"
 
@@ -123,8 +108,6 @@ elif [ "$COMMAND" = "startJob" ]; then
     echo "Starting new job"
     flink run -p ${PARALLELISM} -d -c ${MAIN_CLASS} ${JAR_FILE_NAME}
     sleep 31536000
-
 fi
-
 
 exec "$@"

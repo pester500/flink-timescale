@@ -7,6 +7,29 @@ trait Constants {
   final val LATEST: String = "latest"
   final val query: String =
     """
-      | INSERT INTO words(word, created_at) VALUES (?, ?)
+      | INSERT INTO crimes(id,
+      |   case_number,
+      |   date,
+      |   block,
+      |   iucr,
+      |   primary_type,
+      |   description,
+      |   location_description,
+      |   arrest,
+      |   domestic,
+      |   beat,
+      |   district,
+      |   ward,
+      |   community_area,
+      |   fbi_code,
+      |   x_coordinate,
+      |   y_coordinate,
+      |   year,
+      |   updated_on,
+      |   latitude,
+      |   longitude,
+      |   location,
+      |   created_at)
+      |   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """.stripMargin
 }

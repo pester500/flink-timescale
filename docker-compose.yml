@@ -8,7 +8,7 @@ services:
       - "2181"
 
   kafka:
-    image: wurstmeister/kafka:2.12-2.2.1
+    image: wurstmeister/kafka:2.12-2.3.0
     links:
       - zookeeper
     ports:
@@ -20,12 +20,12 @@ services:
       KAFKA_ADVERTISED_PORT: 9092
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: "20000"
-      KAFKA_CREATE_TOPICS: "input:4:1"
+      KAFKA_CREATE_TOPICS: "input:30:1"
       KAFKA_DELETE_TOPIC_ENABLE: "true"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
 
   timescaledb:
-    image: timescale/timescaledb:1.3.0-pg11
+    image: timescale/timescaledb:1.4.1-pg11
     ports:
       - "5432:5432"
     command: "-p 5432"
@@ -34,31 +34,33 @@ services:
       TS_TUNE_MEMORY: 1GB
 
   jobmanager:
-    image: flink:1.8.0-scala_2.12-alpine
+    image: flink-timescale_flink-timescale:latest
     expose:
       - "6123"
     ports:
       - "8081:8081"
-    command: jobmanager
     links:
        - kafka
     environment:
-      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+      JOB_MANAGER_RPC_ADDRESS: "jobmanager"
+      command: "jobmanager"
 
   taskmanager:
-    image: flink:1.8.0-scala_2.12-alpine
+    image: flink-timescale_flink-timescale:latest
     expose:
       - "6121"
       - "6122"
     depends_on:
       - jobmanager
-    command: taskmanager
     links:
       - jobmanager
       - kafka
       - timescaledb
     environment:
-      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+      JOB_MANAGER_RPC_ADDRESS: "jobmanager"
+      TASK_MANAGER_NUMBER_OF_TASK_SLOTS: 30
+      command: "taskmanager"
+      TASK_MANAGER_HEAP_SIZE: 3096m
 
   flink-timescale:
     build: .
@@ -83,13 +85,13 @@ services:
       JOB_MANAGER_RPC_PORT: 6123
       JOB_MANAGER_BLOB_PORT: 6124
       JOB_MANAGER_QUERY_PORT: 6125
-      PARALLELISM: 4
+      PARALLELISM: 30
       MAIN_CLASS: "com.flink.timescale.Application"
       NUM_STREAM_THREADS: 1
       JAR_FILE_NAME: "job.jar"
 
 
-networks:
-  default:
-    external:
-      name: ""
+#networks:
+#  default:
+#    external:
+#      name: ""
