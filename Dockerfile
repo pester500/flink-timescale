@@ -1,4 +1,4 @@
-FROM openjdk:8-slim
+FROM openjdk:11-slim
 
 # Install dependencies
 RUN set -ex; \
@@ -6,11 +6,9 @@ RUN set -ex; \
   apt-get --no-install-recommends -y install wget; \
   rm -rf /var/lib/apt/lists/*
 
-ENV HADOOP_SCALA_VARIANT=scala_2.12
 ENV FLINK_HOME=/opt/flink
-ENV FLINK_VERSION 1.8.1
-ENV FLINK_URL_FILE_PATH=flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-${HADOOP_SCALA_VARIANT}.tgz
-ENV FLINK_TGZ_URL=https://archive.apache.org/dist/${FLINK_URL_FILE_PATH}
+ENV FLINK_VERSION 1.9.0
+ENV FLINK_TGZ_URL=https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_2.12.tgz
 ENV GOSU_VERSION 1.11
 ENV PATH=$FLINK_HOME/bin:/usr/local/bin:/usr/bin:$PATH
 ENV START_FILE entrypoint.sh

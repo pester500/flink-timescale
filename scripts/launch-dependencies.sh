@@ -10,11 +10,12 @@ function startDocker {
   echo "done."
 }
 
+rm -rf /tmp/flink/
+mkdir -p /tmp/flink
 
-printenv
 startDocker "zookeeper"
 startDocker "timescaledb"
 startDocker "kafka"
 startDocker "jobmanager"
 startDocker "taskmanager"
-#startDocker "flink-timescale"
+startDocker "flink-timescale"

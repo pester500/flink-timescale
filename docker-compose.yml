@@ -20,7 +20,7 @@ services:
       KAFKA_ADVERTISED_PORT: 9092
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: "20000"
-      KAFKA_CREATE_TOPICS: "input:30:1"
+      KAFKA_CREATE_TOPICS: "input:10:1"
       KAFKA_DELETE_TOPIC_ENABLE: "true"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
 
@@ -56,11 +56,13 @@ services:
       - jobmanager
       - kafka
       - timescaledb
+    volumes:
+      - /tmp/flink:/tmp/
     environment:
       JOB_MANAGER_RPC_ADDRESS: "jobmanager"
-      TASK_MANAGER_NUMBER_OF_TASK_SLOTS: 30
+      TASK_MANAGER_NUMBER_OF_TASK_SLOTS: 10
       command: "taskmanager"
-      TASK_MANAGER_HEAP_SIZE: 3096m
+      TASK_MANAGER_HEAP_SIZE: 2048m
 
   flink-timescale:
     image: flink-timescale:latest
@@ -85,7 +87,7 @@ services:
       JOB_MANAGER_RPC_PORT: 6123
       JOB_MANAGER_BLOB_PORT: 6124
       JOB_MANAGER_QUERY_PORT: 6125
-      PARALLELISM: 30
+      PARALLELISM: 10
       MAIN_CLASS: "com.flink.timescale.Application"
       NUM_STREAM_THREADS: 1
       JAR_FILE_NAME: "job.jar"
