@@ -1,8 +1,9 @@
-# Running
-* `./scripts/build.sh && ./scripts/launch-dependencies.sh`
-* Sample data is in `data/` folder, post it to the Kafka topic: `input`
-* Ex: `./bin/kafka-console-producer.sh --topic input --broker-list localhost:9092 < ./flink-timescale/data/passwords.txt`
+# Running Locally
 * Add an entry for Kafka to your `/etc/hosts`: `127.0.0.1 kafka`
+* Download Kafka and extract archive: https://kafka.apache.org/downloads
+* `./scripts/build.sh && ./scripts/launch-dependencies.sh`
+* Sample data is in `data/` folder, extract the archive and post it to the Kafka topic: `input`. Or download as CSV from: https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-present/ijzp-q8t2
+* Ex: `cat /<path_to_repo>/data/crimes.csv | /<path_to_kafka_dir>/bin/kafka-console-producer.sh --topic input --broker-list localhost:9092`
 
 # Scripts
 * `scripts/build.sh` - builds Flink job jar and Docker image

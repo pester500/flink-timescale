@@ -6,12 +6,10 @@ import java.util.Properties
 import com.flink.timescale.config.AppConfig
 import com.flink.timescale.dto.CrimeMessage
 import com.flink.timescale.operators.{CrimeMessageMapper, CrimesStreamSplitter, FailureRowMapper, SuccessRowMapper}
+import com.flink.timescale.schemas.KafkaStringSchema
 import grizzled.slf4j.Logging
-import org.apache.flink.api.common.serialization.DeserializationSchema
-import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.java.io.jdbc.JDBCOutputFormat
 import org.apache.flink.api.java.io.jdbc.JDBCSinkFunction
-import org.apache.flink.api.java.typeutils.TypeExtractor
 import org.apache.flink.runtime.state.filesystem.FsStateBackend
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.functions.aggregation.AggregationFunction.AggregationType
@@ -23,7 +21,6 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer
 import org.apache.flink.types.Row
 import org.flywaydb.core.Flyway
 
-import scala.util.{Failure, Success, Try}
 
 class TimescaleFlow extends Constants with Serializable with Logging {
 
@@ -111,22 +108,6 @@ class TimescaleFlow extends Constants with Serializable with Logging {
 
 
     env.execute("flink-timescale")
-  }
-
-  object KafkaStringSchema extends DeserializationSchema[String] {
-
-    override def isEndOfStream(t: String): Boolean = false
-
-    override def deserialize(bytes: Array[Byte]): String = {
-      Try(new String(bytes, "UTF-8")) match {
-        case Success(value) => value
-        case Failure(e) =>
-          logger.error(s"Error serializing crime details: $e")
-          NULL_FROM_KAFKA
-      }
-    }
-
-    override def getProducedType: TypeInformation[String] = TypeExtractor.getForClass(classOf[String])
   }
 
 }
