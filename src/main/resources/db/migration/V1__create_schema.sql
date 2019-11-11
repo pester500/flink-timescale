@@ -29,4 +29,10 @@ CREATE TABLE IF NOT EXISTS failures(
   created_at TIMESTAMP NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS processing_speed(
+ district VARCHAR NOT NULL,
+ count INTEGER NOT NULL,
+ window_begin TIMESTAMP NOT NULL
+);
+
 SELECT create_hypertable('crimes', 'created_at');

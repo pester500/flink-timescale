@@ -40,11 +40,21 @@ trait Constants {
       | VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """.stripMargin
 
-  val failQuery: String =
+  final val failQuery: String =
     """
       | INSERT INTO failures(
       |   failure,
       |   created_at)
       | VALUES (?, ?)
+      |""".stripMargin
+
+  final val processingSpeedQuery: String =
+    """
+      | INSERT INTO processing_speed(
+      |   district,
+      |   count,
+      |   window_begin
+      | )
+      | VALUES (?, ?, ?)
       |""".stripMargin
 }

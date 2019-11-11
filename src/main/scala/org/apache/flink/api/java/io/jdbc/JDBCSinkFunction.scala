@@ -1,6 +1,7 @@
 package org.apache.flink.api.java.io.jdbc
 
 import grizzled.slf4j.Logging
+import org.apache.flink.api.java.io.jdbc.JDBCOutputFormat
 import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction
 import org.apache.flink.types.Row
