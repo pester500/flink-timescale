@@ -17,12 +17,11 @@ dependencies {
     compile "org.apache.flink:flink-connector-kafka_$scala_version:$flink_version"
     compile "org.apache.flink:flink-table:$flink_version"
     compile "org.apache.flink:flink-jdbc_$scala_version:$flink_version"
-    compile "org.postgresql:postgresql:42.2.6"
+    compile "org.postgresql:postgresql:42.2.10"
     compile "org.flywaydb:flyway-core:$flyway_version"
     compile "org.clapper:grizzled-slf4j_$scala_version:$grizzled_slf4j_version"
     compile "com.github.pureconfig:pureconfig_$scala_version:$pureconfig_version"
     compile "com.github.tototoshi:scala-csv_$scala_version:1.3.6"
-//    compile "org.json4s:json4s-jackson_2.12:3.6.7"
 }
 
 shadowJar {
