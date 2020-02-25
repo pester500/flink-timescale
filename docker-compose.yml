@@ -1,14 +1,14 @@
-version: '2'
+version: '3'
 
 services:
 
   zookeeper:
     image: wurstmeister/zookeeper
-    expose:
+    ports:
       - "2181"
 
-  kafka:
-    image: wurstmeister/kafka:2.12-2.4.0
+  kafka1:
+    image: wurstmeister/kafka:2.12-2.5.0
     links:
       - zookeeper
     ports:
@@ -20,12 +20,44 @@ services:
       KAFKA_ADVERTISED_PORT: 9092
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: "20000"
-      KAFKA_CREATE_TOPICS: "input:10:1"
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+
+  kafka2:
+    image: wurstmeister/kafka:2.12-2.5.0
+    links:
+      - zookeeper
+    ports:
+      - "19092:9092"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ADVERTISED_PORT: 19092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: "20000"
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+
+  kafka3:
+    image: wurstmeister/kafka:2.12-2.5.0
+    links:
+      - zookeeper
+    ports:
+      - "29092:9092"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ADVERTISED_PORT: 29092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: "20000"
+      KAFKA_CREATE_TOPICS: "input:30:1"
       KAFKA_DELETE_TOPIC_ENABLE: "true"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
 
   timescaledb:
-    image: timescale/timescaledb:latest-pg11-oss
+    image: timescale/timescaledb:1.7.1-pg12-oss
     ports:
       - "5432:5432"
     command: "-p 5432"
@@ -39,8 +71,8 @@ services:
       - "6123"
     ports:
       - "8081:8081"
-    links:
-       - kafka
+#    links:
+#       - kafka
     environment:
       JOB_MANAGER_RPC_ADDRESS: "jobmanager"
       command: "jobmanager"
@@ -52,24 +84,22 @@ services:
       - "6122"
     depends_on:
       - jobmanager
-    links:
-      - jobmanager
-      - kafka
-      - timescaledb
-    volumes:
-      - /tmp/flink:/tmp/
+#    links:
+#      - jobmanager
+#      - kafka
+#      - timescaledb
     environment:
       JOB_MANAGER_RPC_ADDRESS: "jobmanager"
-      TASK_MANAGER_NUMBER_OF_TASK_SLOTS: 10
+      TASK_MANAGER_NUMBER_OF_TASK_SLOTS: 30
       command: "taskmanager"
       TASK_MANAGER_HEAP_SIZE: 2048m
 
   flink-timescale:
     image: flink-timescale:latest
-    depends_on:
-      - kafka
-      - timescaledb
-      - taskmanager
+#    depends_on:
+#      - kafka
+#      - timescaledb
+#      - taskmanager
     ports:
       - "5005:5005"
     links:
@@ -87,13 +117,7 @@ services:
       JOB_MANAGER_RPC_PORT: 6123
       JOB_MANAGER_BLOB_PORT: 6124
       JOB_MANAGER_QUERY_PORT: 6125
-      PARALLELISM: 10
+      PARALLELISM: 30
       MAIN_CLASS: "com.flink.timescale.Application"
       NUM_STREAM_THREADS: 1
       JAR_FILE_NAME: "job.jar"
-
-
-#networks:
-#  default:
-#    external:
-#      name: ""

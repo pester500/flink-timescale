@@ -24,6 +24,9 @@ import org.flywaydb.core.Flyway
 
 class TimescaleFlow extends Constants with Serializable with Logging {
 
+  private val parsed = new OutputTag[String](PARSED)
+  private val notParsed = new OutputTag[String](NOT_PARSED)
+
   private lazy val config = new AppConfig
 
   def execute(): Unit = {
@@ -34,7 +37,7 @@ class TimescaleFlow extends Constants with Serializable with Logging {
     flyway.migrate()
     logger.info("Finished the flyway migration")
 
-    // Create local reference to Flink execution env and set state backend for stream re
+    // Create local reference to Flink execution env and set state backend for stream
     val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime)
     env.setStateBackend(new FsStateBackend("file:///tmp/flink/checkpoints"))
@@ -104,7 +107,7 @@ class TimescaleFlow extends Constants with Serializable with Logging {
       .trigger(ContinuousProcessingTimeTrigger.of(Time.seconds(5)))
       .aggregate(AggregationType.SUM, 12)
 
-    crimesByDistrict.writeAsCsv("/tmp/write/")
+//    crimesByDistrict.writeAsCsv("/tmp/write/")
 
 
     env.execute("flink-timescale")

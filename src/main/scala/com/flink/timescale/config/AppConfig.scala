@@ -5,6 +5,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 trait BaseConfig extends Serializable {
   val configFactory: Config = ConfigFactory.load()
 }
+
 trait KafkaConfig extends BaseConfig with Serializable {
   private lazy val kafkaConfig: Config = configFactory.getConfig("kafka")
   lazy val bootstrapServer: String = kafkaConfig.getString("bootstrap.server")
