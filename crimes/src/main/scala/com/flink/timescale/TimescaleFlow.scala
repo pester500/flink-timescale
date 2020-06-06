@@ -8,8 +8,9 @@ import com.flink.timescale.dto.CrimeMessage
 import com.flink.timescale.operators.{CrimeMessageMapper, CrimesStreamSplitter, FailureRowMapper, SuccessRowMapper}
 import com.flink.timescale.schemas.KafkaStringSchema
 import grizzled.slf4j.Logging
-import org.apache.flink.api.java.io.jdbc.JDBCOutputFormat
+
 import org.apache.flink.api.java.io.jdbc.JDBCSinkFunction
+import org.apache.flink.api.java.io.jdbc._
 import org.apache.flink.runtime.state.filesystem.FsStateBackend
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.functions.aggregation.AggregationFunction.AggregationType
