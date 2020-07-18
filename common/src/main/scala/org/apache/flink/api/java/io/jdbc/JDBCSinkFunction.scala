@@ -1,18 +1,22 @@
 package org.apache.flink.api.java.io.jdbc
 
-import grizzled.slf4j.Logging
 import org.apache.flink.configuration.Configuration
+import org.apache.flink.runtime.state.{FunctionInitializationContext, FunctionSnapshotContext}
+import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction
 import org.apache.flink.types.Row
 
-/**
-  * This class is its own package because of some weird dependency resolution issue
-  */
-class JDBCSinkFunction(outputFormat: JDBCOutputFormat) extends RichSinkFunction[Row] with Logging {
+class JDBCSinkFunction(val outputFormat: JDBCOutputFormat) extends RichSinkFunction[Row] with CheckpointedFunction {
 
-  override def invoke(row: Row): Unit = {
-    outputFormat.writeRecord(row)
+  override def invoke(value: Row): Unit = {
+    outputFormat.writeRecord(value)
+  }
+
+  override def snapshotState(context: FunctionSnapshotContext): Unit = {
     outputFormat.flush()
+  }
+
+  override def initializeState(context: FunctionInitializationContext): Unit = {
   }
 
   override def open(parameters: Configuration): Unit = {

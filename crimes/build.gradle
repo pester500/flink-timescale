@@ -1,0 +1,65 @@
+plugins {
+    id 'com.github.johnrengelman.shadow'
+    id 'application'
+    id 'scala'
+    id 'java'
+    id 'idea'
+}
+
+apply plugin: 'maven'
+
+group 'com.flink.timescale'
+
+sourceSets {
+    seedKafka
+}
+
+dependencies {
+    compile project(":common")
+    compile "org.scala-lang:scala-library:$scala_version"
+    compile "org.apache.flink:flink-streaming-scala_$scala_version:$flink_version"
+    compile "org.apache.flink:flink-connector-kafka_$scala_version:$flink_version"
+    compile "org.apache.flink:flink-connector-jdbc_$scala_version:$flink_version"
+    compile "org.apache.flink:flink-table:$flink_version"
+    compile "org.postgresql:postgresql:$postgres_version"
+    compile "org.flywaydb:flyway-core:$flyway_version"
+    compile "org.clapper:grizzled-slf4j_$scala_version:$grizzled_slf4j_version"
+    compile "com.github.pureconfig:pureconfig_$scala_version:$pureconfig_version"
+    compile "com.github.tototoshi:scala-csv_$scala_version:$csv_version"
+
+    testCompile "org.scalatest:scalatest_$scala_version:$scalatest_version"
+    testCompile "org.scalamock:scalamock_$scala_version:$scalamock_version"
+
+    seedKafkaCompile sourceSets.test.runtimeClasspath
+    seedKafkaCompile sourceSets.main.runtimeClasspath
+    seedKafkaCompile "junit:junit:4.12"
+    seedKafkaCompile "org.apache.commons:commons-compress:$commons_compress_version"
+}
+
+assemble.dependsOn(shadowJar)
+
+application {
+    mainClassName = 'com.flink.timescale.Application'
+}
+
+shadowJar {
+    mainClassName = 'com.flink.timescale.Application'
+    mergeServiceFiles()
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+    zip64 true
+}
+
+task seedKafka(type: Test) {
+    testClassesDirs = sourceSets.seedKafka.output.classesDirs
+    classpath = sourceSets.seedKafka.runtimeClasspath
+    systemProperties System.getProperties()
+}
+
+task seed(type: JavaExec, dependsOn: seedKafkaClasses) {
+    main = 'com.flink.timescale.SeedKafka'
+    args = "".split().toList()
+    classpath sourceSets.seedKafka.runtimeClasspath
+    classpath configurations.runtime
+}
