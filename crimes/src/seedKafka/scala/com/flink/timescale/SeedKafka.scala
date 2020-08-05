@@ -14,20 +14,21 @@ object SeedKafka extends Logging {
   private val producer = new KafkaProducer[String, String](kafkaProperties)
 
   def main(args: Array[String]): Unit = {
-    getBufferedReaderForCompressedFile.lines().forEach( line => {
-      val record = new ProducerRecord[String, String]("input", line)
-      if (i % 1000 == 0) {
-        println(s"$i, line: $line")
-      }
-      producer.send(record)
-      i += 1
-    })
-
+    for (x <- 1 until 10 ) {
+      getBufferedReaderForCompressedFile.lines().forEach(line => {
+        val record = new ProducerRecord[String, String]("input", line)
+        if (i % 10000 == 0) {
+          println(s"$x, $i, line: $line")
+        }
+        producer.send(record)
+        i += 1
+      })
+    }
     producer.close()
   }
 
   def getBufferedReaderForCompressedFile: BufferedReader = {
-    val fin = new FileInputStream("./data/crimes.bz2")
+    val fin = new FileInputStream("./crimes.bz2")
     val bis = new BufferedInputStream(fin)
     val input = new CompressorStreamFactory().createCompressorInputStream(bis)
     val br2 = new BufferedReader(new InputStreamReader(input))
