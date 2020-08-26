@@ -1,5 +1,8 @@
 package com.flink.timescale.operators
 
+import java.sql.Timestamp
+import java.time.Instant
+
 import com.flink.timescale.DateFormatter
 import com.flink.timescale.dto.CrimeMessage
 import com.github.tototoshi.csv.{CSVParser, DefaultCSVFormat}
@@ -14,12 +17,14 @@ class CrimeMessageMapper extends MapFunction[String, Either[String, CrimeMessage
 
   override def map(value: String): Either[String, CrimeMessage] = {
 
-    val parsedCrime: List[String] = parser.parseLine(value).get
-
+    val parsedCrime: List[String] = Try {
+      parser.parseLine(value).getOrElse(Nil).map(_.replaceAll("\u0000", ""))
+    }.getOrElse(Nil)
+    
     Try(CrimeMessage(
       parsedCrime.head.toInt,
       parsedCrime(1),
-      parseDate(parsedCrime(2)),
+      Try(parseDate(parsedCrime(2))).getOrElse(Timestamp.from(Instant.now)),
       parsedCrime(3),
       parsedCrime(4),
       parsedCrime(5),
@@ -42,8 +47,7 @@ class CrimeMessageMapper extends MapFunction[String, Either[String, CrimeMessage
     )) match {
       case Success(s) => Right(s: CrimeMessage)
       case Failure(fail) =>
-        logger.error(s"Could not parse: $value")
-        logger.error(s"Exception: $fail")
+        logger.error(s"Could not parse: $value", fail)
         Left(value: String)
     }
   }

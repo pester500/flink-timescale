@@ -11,10 +11,10 @@ function startDocker {
 }
 
 startDocker "zookeeper"
-startDocker "timescaledb"
+#startDocker "timescaledb"
 startDocker "kafka1"
-startDocker "kafka2"
-startDocker "kafka3"
+#startDocker "kafka2"
+#startDocker "kafka3"
 startDocker "jobmanager"
 startDocker "taskmanager"
-startDocker "flink-timescale"
+#startDocker "flink-timescale"

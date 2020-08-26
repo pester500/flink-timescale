@@ -22,6 +22,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: "20000"
       KAFKA_DELETE_TOPIC_ENABLE: "true"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_CREATE_TOPICS: "input:60:1"
 
   kafka2:
     image: wurstmeister/kafka:2.12-2.5.0
@@ -38,6 +39,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: "20000"
       KAFKA_DELETE_TOPIC_ENABLE: "true"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_CREATE_TOPICS: "input:30:2"
 
   kafka3:
     image: wurstmeister/kafka:2.12-2.5.0
@@ -52,7 +54,7 @@ services:
       KAFKA_ADVERTISED_PORT: 29092
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: "20000"
-      KAFKA_CREATE_TOPICS: "input:30:1"
+      KAFKA_CREATE_TOPICS: "input:15:1"
       KAFKA_DELETE_TOPIC_ENABLE: "true"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
 
@@ -63,7 +65,7 @@ services:
     command: "-p 5432"
     environment:
       POSTGRES_PASSWORD: "password"
-      TS_TUNE_MEMORY: 4GB
+      TS_TUNE_MEMORY: 8GB
 
   jobmanager:
     image: flink-timescale:latest
@@ -72,7 +74,7 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      - kafka3
+      - kafka1
     environment:
       JOB_MANAGER_RPC_ADDRESS: "jobmanager"
       command: "jobmanager"
@@ -86,16 +88,16 @@ services:
       - jobmanager
     environment:
       JOB_MANAGER_RPC_ADDRESS: "jobmanager"
-      TASK_MANAGER_NUMBER_OF_TASK_SLOTS: 5
+      TASK_MANAGER_NUMBER_OF_TASK_SLOTS: 15
       command: "taskmanager"
-      TASK_MANAGER_HEAP_SIZE: 2048m
+      TASK_MANAGER_HEAP_SIZE: 16384m
 
   flink-timescale:
     image: flink-timescale:latest
     depends_on:
       - kafka1
-      - kafka2
-      - kafka3
+#      - kafka2
+#      - kafka3
       - timescaledb
       - taskmanager
     ports:
@@ -105,7 +107,7 @@ services:
       BOOTSTRAP_SERVER: "kafka1:9092"
       POSTGRES_USER: "postgres"
       POSTGRES_PASS: "password"
-      POSTGRES_URL: "jdbc:postgresql://timescaledb:5432/postgres"
+      POSTGRES_URL: "jdbc:postgresql://192.168.2.187:5432/postgres?reWriteBatchedInserts=false"
       JOB_NAME: "flink-timescale"
       JOB_MANAGER_RPC_ADDRESS: "jobmanager"
       command: "startJob"
@@ -113,7 +115,7 @@ services:
       JOB_MANAGER_RPC_PORT: 6123
       JOB_MANAGER_BLOB_PORT: 6124
       JOB_MANAGER_QUERY_PORT: 6125
-      PARALLELISM: 5
+      PARALLELISM: 15
       MAIN_CLASS: "com.flink.timescale.Application"
       NUM_STREAM_THREADS: 1
       JAR_FILE_NAME: "job.jar"
