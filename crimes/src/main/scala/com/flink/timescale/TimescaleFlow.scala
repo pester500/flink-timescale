@@ -3,12 +3,11 @@ package com.flink.timescale
 import java.sql.Types._
 import java.util.Properties
 
-import com.flink.timescale.config.AppConfig
+import com.flink.timescale.config.{AppConfig, Constants}
 import com.flink.timescale.dto.CrimeMessage
 import com.flink.timescale.operators.{CrimeMessageMapper, CrimesStreamSplitter, FailureRowMapper, SuccessRowMapper}
 import com.flink.timescale.schemas.KafkaStringSchema
 import grizzled.slf4j.Logging
-
 import org.apache.flink.api.java.io.jdbc.JDBCSinkFunction
 import org.apache.flink.api.java.io.jdbc._
 import org.apache.flink.runtime.state.filesystem.FsStateBackend

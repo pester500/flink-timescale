@@ -1,6 +1,6 @@
 package com.flink.timescale.schemas
 
-import com.flink.timescale.Constants
+import com.flink.timescale.config.Constants
 import grizzled.slf4j.Logging
 import org.apache.flink.api.common.serialization.DeserializationSchema
 import org.apache.flink.api.common.typeinfo.TypeInformation

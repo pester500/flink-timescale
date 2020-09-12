@@ -2,7 +2,7 @@ package com.flink.timescale.operators
 
 import java.lang
 
-import com.flink.timescale.Constants
+import com.flink.timescale.config.Constants
 import com.flink.timescale.dto.CrimeMessage
 import org.apache.flink.streaming.api.collector.selector.OutputSelector
 

@@ -1,4 +1,4 @@
-package com.flink.timescale
+package com.flink.timescale.config
 
 trait Constants {
   final val AUTO_OFFSET_RESET: String = "auto.offset.reset"
