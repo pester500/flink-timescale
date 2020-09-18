@@ -1,4 +1,4 @@
-FROM openjdk:14-slim
+FROM openjdk:15-slim
 
 # Install dependencies
 RUN set -ex; \
@@ -7,9 +7,9 @@ RUN set -ex; \
   rm -rf /var/lib/apt/lists/*
 
 ENV FLINK_HOME=/opt/flink
-ENV FLINK_VERSION 1.11.1
+ENV FLINK_VERSION 1.11.3
 ENV FLINK_TGZ_URL=https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_2.12.tgz
-ENV GOSU_VERSION 1.11
+ENV GOSU_VERSION 1.12
 ENV PATH=$FLINK_HOME/bin:/usr/local/bin:/usr/bin:$PATH
 ENV START_FILE entrypoint.sh
 ENV STOP_JOB_FILE stop_job.sh
@@ -33,12 +33,13 @@ RUN set -ex; \
 # Configure container
 COPY scripts/$START_FILE /
 COPY scripts/$STOP_JOB_FILE /
-COPY crimes/build/libs/job.jar $FLINK_HOME
+COPY crimes/build/libs/crimes.jar $FLINK_HOME
+COPY logs/build/libs/logs.jar $FLINK_HOME
 
 RUN chmod +x /$START_FILE; \
   chmod +x /$STOP_JOB_FILE; \
-  chmod +x $FLINK_HOME/job.jar
-
+  chmod +x $FLINK_HOME/crimes.jar; \
+  chmod +x $FLINK_HOME/logs.jar;
 
 ENTRYPOINT ["/entrypoint.sh"]
 

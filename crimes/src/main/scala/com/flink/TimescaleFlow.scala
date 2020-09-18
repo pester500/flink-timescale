@@ -1,16 +1,15 @@
-package com.flink.timescale
+package com.flink
 
 import java.sql.Types._
 import java.util.Properties
 
-import com.flink.timescale.config.AppConfig
-import com.flink.timescale.dto.CrimeMessage
-import com.flink.timescale.operators.{CrimeMessageMapper, CrimesStreamSplitter, FailureRowMapper, SuccessRowMapper}
-import com.flink.timescale.schemas.KafkaStringSchema
+import com.flink.config.{AppConfig, Constants}
+import com.flink.dto.CrimeMessage
+import com.flink.operators.{CrimeMessageMapper, CrimesStreamSplitter, FailureRowMapper, SuccessRowMapper}
+import com.flink.schema.KafkaStringSchema
 import grizzled.slf4j.Logging
-
 import org.apache.flink.api.java.io.jdbc.JDBCSinkFunction
-import org.apache.flink.api.java.io.jdbc._
+import org.apache.flink.connector.jdbc.JdbcOutputFormat
 import org.apache.flink.runtime.state.filesystem.FsStateBackend
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.functions.aggregation.AggregationFunction.AggregationType
@@ -23,7 +22,7 @@ import org.apache.flink.types.Row
 import org.flywaydb.core.Flyway
 
 
-class TimescaleFlow extends Constants with Serializable with Logging {
+class TimescaleFlow extends Constants with CrimesConstants with Serializable with Logging {
 
   private val parsed = new OutputTag[String](PARSED)
   private val notParsed = new OutputTag[String](NOT_PARSED)
@@ -34,7 +33,7 @@ class TimescaleFlow extends Constants with Serializable with Logging {
 
     // Create schema for JDBC output
     logger.info("Starting the flyway migration")
-    lazy val flyway = Flyway.configure.dataSource(config.url, config.user, config.pass).load()
+    lazy val flyway = Flyway.configure.dataSource(config.pgUrl, config.pgUser, config.pgPass).load()
     flyway.migrate()
     logger.info("Finished the flyway migration")
 
@@ -50,17 +49,16 @@ class TimescaleFlow extends Constants with Serializable with Logging {
     properties.setProperty(BOOTSTRAP_SERVERS, config.bootstrapServer)
     properties.setProperty(GROUP_ID, config.groupId)
     properties.setProperty(AUTO_OFFSET_RESET, EARLIEST)
-    lazy val kafkaConsumer = new FlinkKafkaConsumer[String](config.source, KafkaStringSchema, properties)
+    lazy val kafkaConsumer = new FlinkKafkaConsumer[String](config.crimesSource, KafkaStringSchema, properties)
 
     // Create JDBC connection with reference to success INSERT query
-    lazy val successJdbcOutput = JDBCOutputFormat
-      .buildJDBCOutputFormat
+    lazy val successJdbcOutput = JdbcOutputFormat
+      .buildJdbcOutputFormat
       .setDrivername(POSTGRES_DRIVER)
-      .setDBUrl(config.url)
-      .setUsername(config.user)
-      .setPassword(config.pass)
+      .setDBUrl(config.pgUrl)
+      .setUsername(config.pgUser)
+      .setPassword(config.pgPass)
       .setQuery(successQuery)
-      .setBatchInterval(10000)
       .setSqlTypes(Array[Int](
         INTEGER, VARCHAR, TIMESTAMP, VARCHAR, VARCHAR,
         VARCHAR, VARCHAR, VARCHAR, BOOLEAN, BOOLEAN,
@@ -71,14 +69,13 @@ class TimescaleFlow extends Constants with Serializable with Logging {
       .finish
 
     // Create JDBC connection with reference to failure INSERT query
-    lazy val failureJdbcOutput = JDBCOutputFormat
-      .buildJDBCOutputFormat
+    lazy val failureJdbcOutput = JdbcOutputFormat
+      .buildJdbcOutputFormat
       .setDrivername(POSTGRES_DRIVER)
-      .setDBUrl(config.url)
-      .setUsername(config.user)
-      .setPassword(config.pass)
+      .setDBUrl(config.pgUrl)
+      .setUsername(config.pgUser)
+      .setPassword(config.pgPass)
       .setQuery(failQuery)
-      .setBatchInterval(10000)
       .setSqlTypes(Array[Int](VARCHAR, TIMESTAMP))
       .finish
 

@@ -1,9 +1,9 @@
-package com.flink.timescale.operators
+package com.flink.operators
 
 import java.sql.Timestamp
 import java.time.Instant
 
-import com.flink.timescale.dto.CrimeMessage
+import com.flink.dto.CrimeMessage
 import org.apache.flink.api.common.functions.MapFunction
 import org.apache.flink.types.Row
 

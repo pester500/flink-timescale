@@ -1,9 +1,9 @@
-package com.flink.timescale.operators
+package com.flink.operators
 
 import java.lang
 
-import com.flink.timescale.Constants
-import com.flink.timescale.dto.CrimeMessage
+import com.flink.config.Constants
+import com.flink.dto.CrimeMessage
 import org.apache.flink.streaming.api.collector.selector.OutputSelector
 
 import scala.collection.JavaConverters._
