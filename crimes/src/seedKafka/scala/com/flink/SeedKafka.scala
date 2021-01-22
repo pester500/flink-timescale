@@ -1,4 +1,4 @@
-package com.flink.timescale
+package com.flink
 
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
@@ -28,7 +28,7 @@ object SeedKafka extends Logging {
   }
 
   def getBufferedReaderForCompressedFile: BufferedReader = {
-    val fin = new FileInputStream("./crimes.bz2")
+    val fin = new FileInputStream("/home/george/workspace/flink-timescale/crimes.bz2")
     val bis = new BufferedInputStream(fin)
     val input = new CompressorStreamFactory().createCompressorInputStream(bis)
     val br2 = new BufferedReader(new InputStreamReader(input))
@@ -37,10 +37,11 @@ object SeedKafka extends Logging {
 
   private def kafkaProperties: Properties = {
     val props = new Properties()
-    props.put("bootstrap.servers", "localhost:9092")
+    props.put("bootstrap.servers", "192.168.2.67:9092")
     props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
     props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
     props.put("acks", "0")
+    props.put("compression.type", "snappy")
 
     props
   }

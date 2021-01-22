@@ -1,4 +1,4 @@
-package com.flink.timescale
+package com.flink
 
 import java.sql.Timestamp
 import java.time.LocalDateTime

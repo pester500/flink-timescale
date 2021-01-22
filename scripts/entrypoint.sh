@@ -1,23 +1,5 @@
 #!/bin/bash
 
-###############################################################################
-#  Licensed to the Apache Software Foundation (ASF) under one
-#  or more contributor license agreements.  See the NOTICE file
-#  distributed with this work for additional information
-#  regarding copyright ownership.  The ASF licenses this file
-#  to you under the Apache License, Version 2.0 (the
-#  "License"); you may not use this file except in compliance
-#  with the License.  You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-# limitations under the License.
-###############################################################################
-
 # If unspecified, the hostname of the container is taken as the JobManager address
 JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
 COMMAND=${command}
@@ -76,12 +58,12 @@ elif [ "$COMMAND" = "taskmanager" ]; then
 
     #Any Task Manager should be made here, following same `sed` syntax
     #config reference: https://ci.apache.org/projects/flink/flink-docs-stable/ops/config.html#taskmanager
-    TASK_MANAGER_HEAP_SIZE=${TASK_MANAGER_HEAP_SIZE:-1024m}
+    TASK_MANAGER_PROCESS_SIZE=${TASK_MANAGER_PROCESS_SIZE:-1024m}
     TASK_MANAGER_NUMBER_OF_TASK_SLOTS=${TASK_MANAGER_NUMBER_OF_TASK_SLOTS:-$(grep -c ^processor /proc/cpuinfo)}
     TASK_MANAGER_NUMBER_OF_TASK_MANAGERS=${TASK_MANAGER_NUMBER_OF_TASK_MANAGERS:-1}
 
     sed -i -e "s/taskmanager.numberOfTaskSlots: 1/taskmanager.numberOfTaskSlots: $TASK_MANAGER_NUMBER_OF_TASK_SLOTS/g" "$FLINK_CONFIG_FILE"
-    sed -i -e "s/taskmanager.heap.size: 1024m/taskmanager.heap.size: $TASK_MANAGER_HEAP_SIZE/g" "$FLINK_CONFIG_FILE"
+    sed -i -e "s/taskmanager.memory.process.size: 1728m/taskmanager.memory.process.size: $TASK_MANAGER_PROCESS_SIZE/g" "$FLINK_CONFIG_FILE"
     echo "taskmanager.exit-on-fatal-akka-error: true" >> "$FLINK_CONFIG_FILE"
     echo "taskmanager.jvm-exit-on-oom: true" >> "$FLINK_CONFIG_FILE"
 
@@ -98,8 +80,10 @@ elif [ "$COMMAND" = "startJob" ]; then
     echo "Stopping Existing Job If currently running"
     /stop_job.sh ${JOB_NAME}
     echo "Stopped Existing Job"
-    echo "Starting new job"
-    flink run -p ${PARALLELISM} -d -c ${MAIN_CLASS} ${JAR_FILE_NAME}
+    echo "Starting crimes job"
+    flink run -p ${CRIMES_PARALLELISM} -d -c ${CRIMES_MAIN_CLASS} ${CRIMES_JAR_FILE_NAME}
+    echo "Starting logs job"
+    flink run -p ${LOGS_PARALLELISM} -d -c ${LOGS_MAIN_CLASS} ${LOGS_JAR_FILE_NAME}
     sleep 31536000
 fi
 

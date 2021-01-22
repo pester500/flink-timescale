@@ -1,4 +1,4 @@
-package com.flink.timescale
+package com.flink
 
 object Application extends Serializable {
 

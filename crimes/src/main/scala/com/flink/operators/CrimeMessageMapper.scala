@@ -1,10 +1,10 @@
-package com.flink.timescale.operators
+package com.flink.operators
 
 import java.sql.Timestamp
 import java.time.Instant
 
-import com.flink.timescale.DateFormatter
-import com.flink.timescale.dto.CrimeMessage
+import com.flink.DateFormatter
+import com.flink.dto.CrimeMessage
 import com.github.tototoshi.csv.{CSVParser, DefaultCSVFormat}
 import grizzled.slf4j.Logging
 import org.apache.flink.api.common.functions.MapFunction

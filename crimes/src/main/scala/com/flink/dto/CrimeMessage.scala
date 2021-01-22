@@ -1,4 +1,4 @@
-package com.flink.timescale.dto
+package com.flink.dto
 
 import java.sql.Timestamp
 

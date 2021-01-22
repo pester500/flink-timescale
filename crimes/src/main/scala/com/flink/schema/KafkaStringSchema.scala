@@ -1,6 +1,6 @@
-package com.flink.timescale.schemas
+package com.flink.schema
 
-import com.flink.timescale.Constants
+import com.flink.config.Constants
 import grizzled.slf4j.Logging
 import org.apache.flink.api.common.serialization.DeserializationSchema
 import org.apache.flink.api.common.typeinfo.TypeInformation
@@ -8,7 +8,7 @@ import org.apache.flink.api.java.typeutils.TypeExtractor
 
 import scala.util.{Failure, Success, Try}
 
-object KafkaStringSchema extends DeserializationSchema[String] with Logging with Constants {
+object KafkaStringSchema extends DeserializationSchema[String] with Logging with Constants with Serializable {
 
   override def isEndOfStream(t: String): Boolean = false
 

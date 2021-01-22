@@ -1,4 +1,5 @@
 rootProject.name = 'flink-timescale'
 
 include 'common',
-   'crimes'
+   'crimes',
+   'logs'
