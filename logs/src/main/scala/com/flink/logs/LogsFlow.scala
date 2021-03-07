@@ -9,7 +9,6 @@ import grizzled.slf4j.Logging
 import org.apache.flink.api.java.io.jdbc.JDBCSinkFunction
 import org.apache.flink.connector.jdbc.JdbcOutputFormat
 import org.apache.flink.runtime.state.filesystem.FsStateBackend
-import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer
@@ -27,7 +26,6 @@ class LogsFlow extends Constants with LogsConstants with Serializable with Loggi
     logger.info("Finished the flyway migration")
 
     lazy val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime)
     env.setStateBackend(new FsStateBackend("file:///tmp/flink/checkpoints"))
     env.enableCheckpointing(5000)
     env.setMaxParallelism(config.maxParallelism)

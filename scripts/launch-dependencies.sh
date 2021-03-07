@@ -10,7 +10,7 @@ function startDocker {
   echo "done."
 }
 
-tartDocker "zookeeper"
+startDocker "zookeeper"
 startDocker "timescaledb"
 startDocker "kafka1"
 startDocker "kafka2"

@@ -17,7 +17,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: 192.168.2.253
+      KAFKA_ADVERTISED_HOST_NAME: kafka1
       KAFKA_ADVERTISED_PORT: 9092
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: "20000"
@@ -58,7 +58,7 @@ services:
       KAFKA_CREATE_TOPICS: "input:60:1,logs:60:1"
 
   timescaledb:
-    image: timescale/timescaledb:2.0.0-pg12
+    image: timescale/timescaledb:2.0.2-pg12
     ports:
       - "5432:5432"
     command: "-p 5432"

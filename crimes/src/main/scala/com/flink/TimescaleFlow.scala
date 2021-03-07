@@ -5,27 +5,19 @@ import java.util.Properties
 
 import com.flink.config.{AppConfig, Constants}
 import com.flink.dto.CrimeMessage
-import com.flink.operators.{CrimeMessageMapper, CrimesStreamSplitter, FailureRowMapper, SuccessRowMapper}
+import com.flink.operators.{CrimeMessageMapper, SuccessRowMapper}
 import com.flink.schema.KafkaStringSchema
 import grizzled.slf4j.Logging
 import org.apache.flink.api.java.io.jdbc.JDBCSinkFunction
 import org.apache.flink.connector.jdbc.JdbcOutputFormat
 import org.apache.flink.runtime.state.filesystem.FsStateBackend
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.functions.aggregation.AggregationFunction.AggregationType
 import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.api.windowing.assigners.GlobalWindows
-import org.apache.flink.streaming.api.windowing.time.Time
-import org.apache.flink.streaming.api.windowing.triggers.ContinuousProcessingTimeTrigger
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer
 import org.apache.flink.types.Row
 import org.flywaydb.core.Flyway
 
 
 class TimescaleFlow extends Constants with CrimesConstants with Serializable with Logging {
-
-  private val parsed = new OutputTag[String](PARSED)
-  private val notParsed = new OutputTag[String](NOT_PARSED)
 
   private lazy val config = new AppConfig
 
@@ -39,7 +31,6 @@ class TimescaleFlow extends Constants with CrimesConstants with Serializable wit
 
     // Create local reference to Flink execution env and set state backend for stream
     val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime)
     env.setStateBackend(new FsStateBackend("file:///tmp/flink/checkpoints"))
     env.enableCheckpointing(5000)
     env.setMaxParallelism(config.maxParallelism)
@@ -80,30 +71,19 @@ class TimescaleFlow extends Constants with CrimesConstants with Serializable wit
       .finish
 
     // Read CSV lines from Kafka and return Either[String, CrimeMessage]
-    val dataStream: SplitStream[Either[String, CrimeMessage]] = env.addSource(kafkaConsumer)
+    env.addSource(kafkaConsumer)
       .map[Either[String, CrimeMessage]](new CrimeMessageMapper).name("Parse Kafka CSV message")
-      .split(new CrimesStreamSplitter)
-
-    // Select failure stream and write records to database for human inspection at later time
-    dataStream
-      .select(NOT_PARSED)
-      .map[Row](new FailureRowMapper).name("Save failures for future inspection")
-      .addSink(new JDBCSinkFunction(failureJdbcOutput)).name("Write failures to database")
-
-    // Select success stream and write records to Timescale hypertable for quick querying
-    dataStream
-      .select(PARSED)
       .map[Row](new SuccessRowMapper).name("Convert to Row")
       .addSink(new JDBCSinkFunction(successJdbcOutput)).name("Insert into Timescale crimes table")
 
     //Group stream elements by police district for a summation of all crimes in stream
-    val crimesByDistrict =
-      dataStream.select(PARSED)
-      .map(value => value.right.get).name("Extract crime from Either[CrimeMessage, String]")
-      .keyBy(value => value.district)
-      .window(GlobalWindows.create())
-      .trigger(ContinuousProcessingTimeTrigger.of(Time.seconds(5)))
-      .aggregate(AggregationType.SUM, 12)
+//    val crimesByDistrict =
+//      dataStream.select(PARSED)
+//      .map(value => value.right.get).name("Extract crime from Either[CrimeMessage, String]")
+//      .keyBy(value => value.district)
+//      .window(GlobalWindows.create())
+//      .trigger(ContinuousProcessingTimeTrigger.of(Time.seconds(5)))
+//      .aggregate(AggregationType.SUM, 12)
 
 //    crimesByDistrict.writeAsCsv("/tmp/write/")
 
