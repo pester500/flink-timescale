@@ -3,7 +3,6 @@ plugins {
 }
 
 dependencies {
-    compile "org.apache.flink:flink-streaming-scala_$scala_version:$flink_version"
     compile "org.apache.flink:flink-connector-kafka_$scala_version:$flink_version"
     compile "org.apache.flink:flink-connector-jdbc_$scala_version:$flink_version"
     compile "org.apache.flink:flink-streaming-scala_$scala_version:$flink_version"
