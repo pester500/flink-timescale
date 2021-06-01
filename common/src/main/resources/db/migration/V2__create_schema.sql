@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS logs(
-    id BIGSERIAL PRIMARY KEY,
+    id BIGSERIAL,
     line TEXT NOT NULL,
     ingested TIMESTAMP NOT NULL,
     processed TIMESTAMP NOT NULL,
@@ -14,3 +14,4 @@ CREATE TABLE IF NOT EXISTS log_failures(
 );
 
 CREATE INDEX ON logs (processed);
+SELECT create_hypertable('logs', 'processed')

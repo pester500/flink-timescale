@@ -58,7 +58,7 @@ services:
       KAFKA_CREATE_TOPICS: "input:60:1,logs:60:1"
 
   timescaledb:
-    image: timescale/timescaledb:2.0.2-pg12
+    image: timescale/timescaledb:2.3.0-pg13
     ports:
       - "5432:5432"
     command: "-p 5432"
