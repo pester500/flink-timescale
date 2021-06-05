@@ -3,28 +3,22 @@ package com.flink.crypto
 import grizzled.slf4j.Logging
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
+import sttp.client3._
 
 import java.io.{BufferedInputStream, BufferedReader, FileInputStream, InputStreamReader}
 import java.util.Properties
 
 object SeedKafka extends Logging {
 
-  private var i = 0
+  val url = "https://min-api.cryptocompare.com/data/all/coinlist"
 
   private val producer = new KafkaProducer[String, String](kafkaProperties)
 
   def main(args: Array[String]): Unit = {
-    for (x <- 1 until 10 ) {
-      getBufferedReaderForCompressedFile.lines().forEach(line => {
-        val record = new ProducerRecord[String, String]("input", line)
-        if (i % 10000 == 0) {
-          println(s"$x, $i, line: $line")
-        }
-        producer.send(record)
-        i += 1
-      })
-    }
-    producer.close()
+    val request = basicRequest.get(uri"https://api.github.com/search/repositories?q=$query&sort=$sort")
+    val backend = HttpURLConnectionBackend()
+    val response = request.send(backend)
+
   }
 
   def getBufferedReaderForCompressedFile: BufferedReader = {

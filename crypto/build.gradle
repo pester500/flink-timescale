@@ -34,6 +34,8 @@ dependencies {
     seedKafkaCompile sourceSets.main.runtimeClasspath
     seedKafkaCompile "junit:junit:4.12"
     seedKafkaCompile "org.apache.commons:commons-compress:$commons_compress_version"
+    seedKafkaCompile "com.softwaremill.sttp.client3:core_$scala_version:$sttp_version"
+
 }
 
 assemble.dependsOn(shadowJar)
