@@ -1,0 +1,46 @@
+plugins {
+    id 'com.github.johnrengelman.shadow'
+    id 'application'
+    id 'scala'
+    id 'java'
+    id 'idea'
+}
+
+apply plugin: 'maven'
+
+group 'com.flink.endpoints'
+
+dependencies {
+    compile project(":common")
+    compile "org.scala-lang:scala-library:$scala_version"
+    compile "org.apache.flink:flink-streaming-scala_$scala_version:$flink_version"
+    compile "org.apache.flink:flink-connector-kafka_$scala_version:$flink_version"
+    compile "org.apache.flink:flink-table:$flink_version"
+    compile "org.postgresql:postgresql:$postgres_version"
+    compile "org.flywaydb:flyway-core:$flyway_version"
+    compile "org.clapper:grizzled-slf4j_$scala_version:$grizzled_slf4j_version"
+    compile "com.github.pureconfig:pureconfig_$scala_version:$pureconfig_version"
+    compile "com.github.tototoshi:scala-csv_$scala_version:$csv_version"
+    compile "org.json4s:json4s-jackson_$scala_version:$json4s_version"
+    compile "org.scalatra:scalatra_${scala_version}:${scalatra_version}"
+    compile "org.scalatra:scalatra-json_${scala_version}:${scalatra_version}"
+    compile "org.scalatra:scalatra-swagger_${scala_version}:${scalatra_version}"
+    compile "org.scalatra:scalatra-metrics_${scala_version}:${scalatra_version}"
+    compile "org.scalikejdbc:scalikejdbc_${scala_version}:${scalalike_version}"
+
+}
+
+assemble.dependsOn(shadowJar)
+
+application {
+    mainClassName = 'com.flink.logs.Application'
+}
+
+shadowJar {
+    mainClassName = 'com.flink.logs.Application'
+    mergeServiceFiles()
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+    zip64 true
+}
