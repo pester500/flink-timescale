@@ -24,7 +24,6 @@ dependencies {
     compile "org.postgresql:postgresql:$postgres_version"
     compile "org.flywaydb:flyway-core:$flyway_version"
     compile "org.clapper:grizzled-slf4j_$scala_version:$grizzled_slf4j_version"
-    compile "com.github.pureconfig:pureconfig_$scala_version:$pureconfig_version"
     compile "com.github.tototoshi:scala-csv_$scala_version:$csv_version"
 
     testCompile "org.scalatest:scalatest_$scala_version:$scalatest_version"

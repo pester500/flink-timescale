@@ -1,9 +1,11 @@
 package com.flink
 
 trait CrimesConstants {
+  final val crimesTable: String = "crimes"
+
   final val successQuery: String =
-    """
-      | INSERT INTO crimes(
+    s"""
+      | INSERT INTO $crimesTable(
       |   id,
       |   case_number,
       |   date,
@@ -37,4 +39,5 @@ trait CrimesConstants {
       |   created_at)
       | VALUES (?, ?)
       |""".stripMargin
+
 }

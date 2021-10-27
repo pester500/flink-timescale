@@ -9,7 +9,6 @@ group 'com.flink.timescale'
 allprojects {
 
     repositories {
-        jcenter()
         mavenCentral()
         mavenLocal()
     }
@@ -20,5 +19,5 @@ allprojects {
 }
 
 scala {
-    zincVersion = "1.3.3"
+    zincVersion = "1.5.7"
 }

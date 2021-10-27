@@ -1,9 +1,11 @@
 package com.flink.logs
 
 trait LogsConstants {
+  final val logTableName = "logs"
+
   final val successQuery: String =
-    """
-      | INSERT INTO logs(
+    s"""
+      | INSERT INTO $logTableName(
       |   id,
       |   line,
       |   ingested,

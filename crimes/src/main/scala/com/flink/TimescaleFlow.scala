@@ -1,18 +1,18 @@
 package com.flink
 
 import java.sql.Types._
-import java.util.Properties
-
 import com.flink.config.{AppConfig, Constants}
 import com.flink.dto.CrimeMessage
 import com.flink.operators.{CrimeMessageMapper, SuccessRowMapper}
 import com.flink.schema.KafkaStringSchema
 import grizzled.slf4j.Logging
+import org.apache.flink.api.common.eventtime.WatermarkStrategy
 import org.apache.flink.api.java.io.jdbc.JDBCSinkFunction
-import org.apache.flink.connector.jdbc.JdbcOutputFormat
-import org.apache.flink.runtime.state.filesystem.FsStateBackend
+import org.apache.flink.connector.jdbc.JdbcRowOutputFormat
+import org.apache.flink.connector.kafka.source.KafkaSource
+import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer
+import org.apache.flink.connector.kafka.source.reader.deserializer.KafkaRecordDeserializationSchema
 import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer
 import org.apache.flink.types.Row
 import org.flywaydb.core.Flyway
 
@@ -31,19 +31,18 @@ class TimescaleFlow extends Constants with CrimesConstants with Serializable wit
 
     // Create local reference to Flink execution env and set state backend for stream
     val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setStateBackend(new FsStateBackend("file:///tmp/flink/checkpoints"))
-    env.enableCheckpointing(5000)
     env.setMaxParallelism(config.maxParallelism)
 
-    // Create Kafka consumer with properties
-    val properties = new Properties()
-    properties.setProperty(BOOTSTRAP_SERVERS, config.bootstrapServer)
-    properties.setProperty(GROUP_ID, config.groupId)
-    properties.setProperty(AUTO_OFFSET_RESET, EARLIEST)
-    lazy val kafkaConsumer = new FlinkKafkaConsumer[String](config.crimesSource, KafkaStringSchema, properties)
+    lazy val kafkaConsumer = KafkaSource.builder[String]
+      .setBootstrapServers(config.bootstrapServer)
+      .setGroupId(config.groupId)
+      .setTopics(config.crimesSource)
+      .setDeserializer(KafkaRecordDeserializationSchema.valueOnly(KafkaStringSchema))
+      .setStartingOffsets(OffsetsInitializer.earliest)
+      .build
 
     // Create JDBC connection with reference to success INSERT query
-    lazy val successJdbcOutput = JdbcOutputFormat
+    lazy val successJdbcOutput = JdbcRowOutputFormat
       .buildJdbcOutputFormat
       .setDrivername(POSTGRES_DRIVER)
       .setDBUrl(config.pgUrl)
@@ -60,7 +59,7 @@ class TimescaleFlow extends Constants with CrimesConstants with Serializable wit
       .finish
 
     // Create JDBC connection with reference to failure INSERT query
-    lazy val failureJdbcOutput = JdbcOutputFormat
+    lazy val failureJdbcOutput = JdbcRowOutputFormat
       .buildJdbcOutputFormat
       .setDrivername(POSTGRES_DRIVER)
       .setDBUrl(config.pgUrl)
@@ -71,7 +70,7 @@ class TimescaleFlow extends Constants with CrimesConstants with Serializable wit
       .finish
 
     // Read CSV lines from Kafka and return Either[String, CrimeMessage]
-    env.addSource(kafkaConsumer)
+    env.fromSource(kafkaConsumer, WatermarkStrategy.noWatermarks[String], crimesTable)
       .map[Either[String, CrimeMessage]](new CrimeMessageMapper).name("Parse Kafka CSV message")
       .map[Row](new SuccessRowMapper).name("Convert to Row")
       .addSink(new JDBCSinkFunction(successJdbcOutput)).name("Insert into Timescale crimes table")

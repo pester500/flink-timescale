@@ -13,7 +13,9 @@ import org.json4s.{Formats, NoTypeHints}
 import org.json4s.jackson.Serialization
 import org.json4s.jackson.Serialization.write
 
-import scala.compat.java8.StreamConverters._
+import java.util.concurrent.ForkJoinPool
+import scala.collection.parallel._
+import scala.io.Source
 
 object SeedKafka extends Logging {
 
@@ -23,13 +25,15 @@ object SeedKafka extends Logging {
 
   private val producer = new KafkaProducer[String, String](kafkaProperties)
 
+  private val pool = new ForkJoinPool(16)
+
   def main(args: Array[String]): Unit = {
-    getFileTree(new File("/home/george/Downloads/logs")).filter(_.isFile()).foreach(file => {
-      val compressedList = time {
-        getBufferedReader(file).lines().toScala[List].par.map(line => { zipString(line.replaceAll("\u0000", "")) })
-      }
-      compressedList.par.map(line => {
-        val message = KafkaLogMessage(UUID.randomUUID().toString, line, Timestamp.from(Instant.now()), file.getAbsolutePath)
+    getFileTree(new File("/home/george/Downloads/logs")).filter(_.isFile).foreach(file => {
+      val stream = Source.fromFile(file, "ISO-8859-1").getLines.toStream.par
+      stream.tasksupport = new ForkJoinTaskSupport(pool)
+
+      stream.foreach(line => {
+        val message = KafkaLogMessage(UUID.randomUUID().toString, zipString(line.replaceAll("\u0000", "")), Timestamp.from(Instant.now()), file.getAbsolutePath)
         val record = new ProducerRecord[String, String]("logs", write(message))
         if (i % 100000 == 0) {
           println(s"$i, message: $message")
@@ -37,15 +41,10 @@ object SeedKafka extends Logging {
         i += 1
         producer.send(record)
       })
-
     })
-    producer.close()
-  }
 
-  def getBufferedReader(file: File): BufferedReader = {
-    val fin = new FileInputStream(file)
-    val bis = new BufferedInputStream(fin)
-    new BufferedReader(new InputStreamReader(bis))
+    producer.close()
+    pool.shutdown()
   }
 
   def getFileTree(f: File): Stream[File] =
