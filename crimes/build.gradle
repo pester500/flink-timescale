@@ -32,7 +32,6 @@ dependencies {
 
     seedKafkaCompile sourceSets.test.runtimeClasspath
     seedKafkaCompile sourceSets.main.runtimeClasspath
-    seedKafkaCompile "junit:junit:4.12"
     seedKafkaCompile "org.apache.commons:commons-compress:$commons_compress_version"
 }
 

@@ -32,7 +32,6 @@ dependencies {
 
     seedKafkaCompile sourceSets.test.runtimeClasspath
     seedKafkaCompile sourceSets.main.runtimeClasspath
-    seedKafkaCompile "junit:junit:4.12"
     seedKafkaCompile "org.apache.commons:commons-compress:$commons_compress_version"
 }
 
@@ -59,7 +58,7 @@ task seedKafka(type: Test) {
 
 task seed(type: JavaExec, dependsOn: seedKafkaClasses) {
     main = 'com.flink.logs.SeedKafka'
-    args = "".split().toList()
+    args = "-Xmx20000M -Xms20000M".split().toList()
     classpath sourceSets.seedKafka.runtimeClasspath
     classpath configurations.runtime
 }

@@ -19,10 +19,10 @@ object LogEntrySchema extends DeserializationSchema[KafkaLogMessage] with Loggin
   override def isEndOfStream(t: KafkaLogMessage): Boolean = false
 
   override def deserialize(bytes: Array[Byte]): KafkaLogMessage = {
-    Try(parse(new String(bytes, "UTF-8")).extract[KafkaLogMessage]) match {
-      case Success(value) => value
+    Try(parse(new String(bytes)).extract[KafkaLogMessage]) match {
+      case Success(value) => value: KafkaLogMessage
       case Failure(e) =>
-        logger.error(s"Error serializing crime details: $e")
+        logger.error(s"Error serializing logs entry: $e")
         throw new RuntimeException(s"wat: $e")
     }
   }
