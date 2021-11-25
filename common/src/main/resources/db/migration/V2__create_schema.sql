@@ -13,5 +13,5 @@ CREATE TABLE IF NOT EXISTS log_failures(
   created_at TIMESTAMP NOT NULL
 );
 
-CREATE INDEX ON logs (id, processed);
+CREATE INDEX ON logs (id,   processed);
 SELECT create_hypertable('logs', 'processed')
