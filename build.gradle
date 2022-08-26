@@ -1,9 +1,10 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'scala'
     id 'java'
     id 'idea'
 }
+
 group 'com.flink.timescale'
 
 allprojects {
@@ -12,12 +13,8 @@ allprojects {
         mavenCentral()
         mavenLocal()
     }
-
-    shadowJar {
-        zip64 true
-    }
 }
 
 scala {
-    zincVersion = "1.5.7"
+    zincVersion = "1.7.1"
 }

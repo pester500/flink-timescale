@@ -3,11 +3,9 @@ plugins {
 }
 
 dependencies {
-    compile "org.apache.flink:flink-connector-kafka_$scala_version:$flink_version"
-    compile "org.apache.flink:flink-connector-jdbc_$scala_version:$flink_version"
-    compile "org.apache.flink:flink-streaming-scala_$scala_version:$flink_version"
-    compile "org.apache.flink:flink-connector-kafka_$scala_version:$flink_version"
-    compile "com.github.pureconfig:pureconfig_$scala_version:$pureconfig_version"
-    compile "org.clapper:grizzled-slf4j_$scala_version:$grizzled_slf4j_version"
+    implementation "org.apache.flink:flink-connector-kafka:$flink_version"
+    implementation "org.apache.flink:flink-connector-jdbc:$flink_version"
+    implementation "org.apache.flink:flink-streaming-scala_$scala_version:$flink_version"
+    implementation "com.github.pureconfig:pureconfig_$scala_version:$pureconfig_version"
+    implementation "org.clapper:grizzled-slf4j_$scala_version:$grizzled_slf4j_version"
 }
-

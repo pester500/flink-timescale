@@ -38,6 +38,13 @@ sed -i -e "s/jobmanager.rpc.port: 6123/jobmanager.rpc.port: $JOB_MANAGER_RPC_POR
 sed -i -e "s/rest.port: 8081/rest.port: $JOB_MANAGER_REST_PORT/g" "$FLINK_CONFIG_FILE"
 echo "rest.address: $JOB_MANAGER_RPC_ADDRESS" >> "$FLINK_CONFIG_FILE"
 
+# Replace default REST/RPC endpoint bind address to use the container's network interface \
+sed -i 's/rest.address: localhost/rest.address: 0.0.0.0/g' "$FLINK_CONFIG_FILE"; \
+sed -i 's/rest.bind-address: localhost/rest.bind-address: 0.0.0.0/g' "$FLINK_CONFIG_FILE"; \
+sed -i 's/jobmanager.bind-host: localhost/jobmanager.bind-host: 0.0.0.0/g' "$FLINK_CONFIG_FILE"; \
+sed -i 's/taskmanager.bind-host: localhost/taskmanager.bind-host: 0.0.0.0/g' "$FLINK_CONFIG_FILE"; \
+sed -i '/taskmanager.host: localhost/d' $FLINK_HOME/conf/flink-conf.yaml;
+
 
 if [ "$COMMAND" = "help" ]; then
     echo "Usage: $(basename "$0") (jobmanager|taskmanager|startJob|local|help)"

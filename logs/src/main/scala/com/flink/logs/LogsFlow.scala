@@ -43,6 +43,7 @@ class LogsFlow extends Constants with LogsConstants with Serializable with Loggi
       .setStartingOffsets(OffsetsInitializer.earliest)
       .build
 
+
     lazy val successJdbcOutput = JdbcRowOutputFormat
       .buildJdbcOutputFormat
       .setDrivername(POSTGRES_DRIVER)
