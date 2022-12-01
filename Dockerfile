@@ -1,9 +1,9 @@
 FROM openjdk:15-slim
 
 ENV FLINK_HOME=/opt/flink
-ENV FLINK_VERSION 1.15.2
+ENV FLINK_VERSION 1.16.0
 ENV FLINK_TGZ_URL=https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_2.12.tgz
-ENV GOSU_VERSION 1.12
+ENV GOSU_VERSION 1.14
 ENV PATH=$FLINK_HOME/bin:/usr/local/bin:/usr/bin:$PATH
 ENV START_FILE entrypoint.sh
 ENV STOP_JOB_FILE stop_job.sh
