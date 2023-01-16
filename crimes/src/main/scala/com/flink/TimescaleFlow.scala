@@ -3,6 +3,7 @@ package com.flink
 import java.sql.Types._
 import com.flink.config.{AppConfig, Constants}
 import com.flink.dto.CrimeMessage
+import com.flink.kafka.KafkaClient
 import com.flink.operators.{CrimeMessageMapper, SuccessRowMapper}
 import com.flink.schema.KafkaStringSchema
 import grizzled.slf4j.Logging
@@ -17,11 +18,12 @@ import org.apache.flink.types.Row
 import org.flywaydb.core.Flyway
 
 
-class TimescaleFlow extends Constants with CrimesConstants with Serializable with Logging {
+class TimescaleFlow extends Constants with CrimesConstants with KafkaClient with Serializable with Logging {
 
   private lazy val config = new AppConfig
 
   def execute(): Unit = {
+    createTopic()
 
     // Create schema for JDBC output
     logger.info("Starting the flyway migration")
@@ -36,7 +38,7 @@ class TimescaleFlow extends Constants with CrimesConstants with Serializable wit
     lazy val kafkaConsumer = KafkaSource.builder[String]
       .setBootstrapServers(config.bootstrapServer)
       .setGroupId(config.groupId)
-      .setTopics(config.crimesSource)
+      .setTopics(config.topicName)
       .setDeserializer(KafkaRecordDeserializationSchema.valueOnly(KafkaStringSchema))
       .setStartingOffsets(OffsetsInitializer.earliest)
       .build

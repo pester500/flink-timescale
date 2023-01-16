@@ -53,7 +53,7 @@ object SeedKafka extends Logging {
 
   private def kafkaProperties: Properties = {
     val props = new Properties()
-    props.put("bootstrap.servers", "192.168.2.246:9092")
+    props.put("bootstrap.servers", "192.168.2.138:9093")
     props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
     props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
     props.put("acks", "0")
