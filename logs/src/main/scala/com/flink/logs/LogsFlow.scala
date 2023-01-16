@@ -3,6 +3,7 @@ package com.flink.logs
 import java.sql.Types.{INTEGER, TIMESTAMP, VARCHAR}
 import java.util.Properties
 import com.flink.config.{AppConfig, Constants}
+import com.flink.kafka.KafkaClient
 import com.flink.logs.dto.{KafkaLogMessage, LogEntry}
 import com.flink.logs.schema.LogEntrySchema
 import grizzled.slf4j.Logging
@@ -17,11 +18,13 @@ import org.apache.flink.streaming.api.scala._
 import org.apache.flink.types.Row
 import org.flywaydb.core.Flyway
 
-class LogsFlow extends Constants with LogsConstants with Serializable with Logging {
+class LogsFlow extends Constants with LogsConstants with KafkaClient with Serializable with Logging {
 
   private lazy val config = new AppConfig
 
   def execute(): Unit = {
+    createTopic()
+
     logger.info("Starting the flyway migration")
     lazy val flyway = Flyway.configure.dataSource(config.pgUrl, config.pgUser, config.pgPass).load()
     flyway.migrate()
@@ -38,7 +41,7 @@ class LogsFlow extends Constants with LogsConstants with Serializable with Loggi
     lazy val kafkaConsumer = KafkaSource.builder[KafkaLogMessage]
       .setBootstrapServers(config.bootstrapServer)
       .setGroupId(config.groupId)
-      .setTopics(config.logsSource)
+      .setTopics(config.topicName)
       .setDeserializer(KafkaRecordDeserializationSchema.valueOnly(LogEntrySchema))
       .setStartingOffsets(OffsetsInitializer.earliest)
       .build

@@ -9,9 +9,14 @@ trait BaseConfig extends Serializable {
 trait KafkaConfig extends BaseConfig with Serializable {
   private lazy val kafkaConfig: Config = configFactory.getConfig("kafka")
   lazy val bootstrapServer: String = kafkaConfig.getString("bootstrap.server")
-  lazy val groupId: String = kafkaConfig.getString("group.id")
-  lazy val crimesSource: String = kafkaConfig.getString("crimes.source")
-  lazy val logsSource: String = kafkaConfig.getString("logs.source")
+}
+
+trait TopicConfig extends BaseConfig with Serializable {
+  private lazy val topicConfig: Config = configFactory.getConfig("topic")
+  lazy val topicName: String = topicConfig.getString("name")
+  lazy val groupId: String = topicConfig.getString("group.id")
+  lazy val partitions: Int = topicConfig.getInt("partitions")
+  lazy val replicationFactor: Short = topicConfig.getInt("replication.factor").toShort
 }
 
 trait TimescaleDbConfig extends BaseConfig with Serializable {
@@ -27,4 +32,4 @@ trait JobConfig extends BaseConfig with Serializable {
   lazy val numStreamThreads: Int = jobConfig.getInt("num.stream.threads")
 }
 
-class AppConfig extends TimescaleDbConfig with KafkaConfig with JobConfig with Serializable
+class AppConfig extends TimescaleDbConfig with KafkaConfig with TopicConfig with JobConfig with Serializable
