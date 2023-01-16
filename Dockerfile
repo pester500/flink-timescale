@@ -1,7 +1,7 @@
 FROM openjdk:15-slim
 
 ENV FLINK_HOME=/opt/flink
-ENV FLINK_VERSION 1.15.2
+ENV FLINK_VERSION 1.16.0
 ENV FLINK_TGZ_URL=https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_2.12.tgz
 ENV GOSU_VERSION 1.12
 ENV PATH=$FLINK_HOME/bin:/usr/local/bin:/usr/bin:$PATH
@@ -13,7 +13,6 @@ WORKDIR $FLINK_HOME
 RUN set -ex; \
   apt-get update; \
   apt-get --no-install-recommends -y install wget; \
-  rm -rf /var/lib/apt/lists/* ; \
   wget -nv -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)"; \
   chmod +x /usr/local/bin/gosu; \
   gosu nobody true;\
@@ -24,8 +23,9 @@ RUN set -ex; \
   tar -xf flink.tgz --strip-components=1; \
   rm flink.tgz; \
   mkdir -p $FLINK_HOME/logs; \
-  chown -R flink:flink .;\
-  rm -rf $FLINK_HOME/opt/*
+  chown -R flink:flink .; \
+  rm -rf $FLINK_HOME/opt/*; \
+  rm -rf /var/lib/apt/lists/* ;    
 
 # Configure container
 COPY scripts/$START_FILE /

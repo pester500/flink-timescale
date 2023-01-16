@@ -3,14 +3,14 @@ version: '3'
 services:
 
   zookeeper:
-    image: bitnami/zookeeper:3.7
+    image: bitnami/zookeeper:3.8.0
     ports:
       - "2181:2181"
     environment:
       ALLOW_ANONYMOUS_LOGIN: "true"
 
   kafka1:
-    image: bitnami/kafka:3
+    image: bitnami/kafka:3.3.1
     container_name: kafka1
     ports:
       - "9093:9093"
@@ -26,7 +26,7 @@ services:
       - zookeeper
 
   kafka2:
-    image: bitnami/kafka:3
+    image: bitnami/kafka:3.3.1
     container_name: kafka2
     ports:
       - "9094:9094"
@@ -42,7 +42,7 @@ services:
       - zookeeper
 
   kafka3:
-    image: bitnami/kafka:3
+    image: bitnami/kafka:3.3.1
     container_name: kafka3
     ports:
       - "9095:9095"
