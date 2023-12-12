@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-docker-compose stop
-docker-compose rm -fv
+docker compose stop
+docker compose rm -fv

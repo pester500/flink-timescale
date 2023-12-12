@@ -1,7 +1,7 @@
-FROM openjdk:15-slim
+FROM openjdk:17-slim
 
 ENV FLINK_HOME=/opt/flink
-ENV FLINK_VERSION 1.16.0
+ENV FLINK_VERSION 1.18.0
 ENV FLINK_TGZ_URL=https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_2.12.tgz
 ENV GOSU_VERSION 1.12
 ENV PATH=$FLINK_HOME/bin:/usr/local/bin:/usr/bin:$PATH
